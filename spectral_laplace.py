@@ -1,3 +1,4 @@
+BOLLEBOLLEBOLLE
 # -*- coding: utf-8 -*-
 import numpy as np
 # set up the LHS (left hand side) for the spectral method for Laplace eqn
