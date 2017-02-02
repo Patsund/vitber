@@ -26,3 +26,14 @@ def spectral_laplace(x,f,ua,ub):
     B = spectral_laplace_rhs(x,f,ua,ub)
     # solve the system
     return np.linalg.solve(A,B)
+
+# Laplace-implementasjon. Tar inn liste av x-verdier. Gir ut liste av funksjoner som skal deriveres 
+#og puttes inn i matrise hvor vi mater dem med x-verdier
+    # N = 5
+def Laplaces(xValues):
+    Li = np.zeroes(N)
+    for i in range(N): #Skal lage N Laplace-funksjoner. Starter på i=0 <=> første indeks
+        Li[i] = 1 
+        for xn in xValues: #Multipliserer ett og ett ledd på Li
+            if (xValues.index(xn) != i): # bortsett fra xi
+                Li[i] *= ((x-xn)/(xValues[i]-xn) #Er det stor nok plass i minnet for hvert listeelement?
