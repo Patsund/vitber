@@ -1,0 +1,54 @@
+import numpy as np
+
+def partition(a,b,N):
+    length = b-a
+    dx = length/(N-1) #Her trekker jeg fra 1 for å få med b med 40 punkter
+    xValues = np.zeros(N)
+    xTemporary = a #Sett inn verdien av a
+    for i in range(N):
+        xValues[i] = xTemporary
+        xTemporary += dx
+    return xValues
+
+## http://math.stackexchange.com/questions/1105160/evaluate-derivative-of-lagrange-polynomials-at-construction-points
+
+def innerProduct(N, xValues, xn, i, l, m):
+    product = 1
+    for k in range(N):
+        if (k != i) and (k != l) and (k != m):
+            product *= ((xn-xValues[k])/(xValues[i]-xValues[k]))
+    return product
+
+def innerSummator(N, xValues, xn, i, l):
+    innerSum = 0
+    for m in range(N):
+        if (m != i) and (m != l):
+            innerSum += (1/(xValues[i]-xValues[m]))*innerProduct(N, xValues, xn, i, l, m)
+    return innerSum
+
+def NDDLagrange(N, xValues, xn, i): #Må tas direkte
+    secondDerivative = 0
+    for l in range(N):
+        if (l != i):
+            secondDerivative += (1/(xValues[i]-xValues[l]))*innerSummator(N, xValues, xn, i, l)
+    return -secondDerivative
+    
+def main():
+    a = 0
+    b = 5
+    N = 40
+    xValues = partition(a,b,N) #Her har vi en partisjon av x-intervallet
+    matrixA = [[0 for q in range(N)] for w in range(N)]
+    """
+    for xn in xValues:
+        for i in range(N):
+            matrixA[xn][i] = NDDLagrange(N, xValues, xn, i)
+    for row in matrixA:
+        print (row)
+    """
+    xn = xValues[0]
+    i = xValues[0]
+#    print(xValues)
+    print (NDDLagrange(N, xValues, xn, i))
+    
+main()
