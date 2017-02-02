@@ -37,3 +37,4 @@ def Laplaces(xValues):
         for xn in xValues: #Multipliserer ett og ett ledd på Li
             if (xValues.index(xn) != i): # bortsett fra xi
                 Li[i] *= ((x-xn)/(xValues[i]-xn) #Er det stor nok plass i minnet for hvert listeelement?
+    return Li
