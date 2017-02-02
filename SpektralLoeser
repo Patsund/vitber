@@ -1,0 +1,79 @@
+import numpy as np
+import math
+
+def partition(a,b,N):
+    length = b-a
+    dx = length/(N-1) #Her trekker jeg fra 1 for å få med b med 40 punkter
+    xValues = np.zeros(N)
+    xTemporary = a #Sett inn verdien av a
+    for i in range(N):
+        xValues[i] = xTemporary
+        xTemporary += dx
+    return xValues
+
+## http://math.stackexchange.com/questions/1105160/evaluate-derivative-of-lagrange-polynomials-at-construction-points
+
+def innerProduct(N, xValues, xn, i, l, m):
+    product = 1
+    for k in range(N):
+        if (k != i) and (k != l) and (k != m):
+            product *= ((xn-xValues[k])/(xValues[i]-xValues[k]))
+    return product
+
+def innerSummator(N, xValues, xn, i, l):
+    innerSum = 0
+    for m in range(N):
+        if (m != i) and (m != l):
+            innerSum += (1/(xValues[i]-xValues[m]))*innerProduct(N, xValues, xn, i, l, m)
+    return innerSum
+
+def NDDLagrange(N, xValues, xn, i): #Må tas direkte
+    secondDerivative = 0
+    for l in range(N):
+        if (l != i):
+            secondDerivative += (1/(xValues[i]-xValues[l]))*innerSummator(N, xValues, xn, i, l)
+    return -secondDerivative
+
+## set up the LHS (left hand side) for the spectral method for Laplace eqn
+#Her er x listen 
+def spectral_laplace_lhs(x):
+    N = len(x)
+    A = np.zeros((N,N))
+    A[0][0],A[N-1][N-1] = 1,1
+    for xn in range(1,N-1):
+        for i in range(N):
+            A[xn][i] = NDDLagrange(N, x, xn, i)
+    return A
+
+def f1(x):
+    my = 2
+    sigma = 4
+    return math.exp(-((x-my)**2)/(sigma**2))
+
+def spectral_laplace_rhs(x,f,ua,ub):
+    N = len(x)
+    a,b = x[0],x[N-1]
+    B = np.zeros(N)
+    B[0],B[N-1] = ua, ub
+    for i in range (1,N-2):
+        B[i] = f(x[i])
+    return B
+
+def spectral_laplace(x,f,ua,ub):
+    A = spectral_laplace_lhs(x)
+    B = spectral_laplace_rhs(x,f,ua,ub)
+    print ("A-matrise: \n",A)
+    print ("B-matrise: \n",B)
+    print("Linalg sin losning av U-verdier:")
+    return np.linalg.solve(A,B) # solve the system
+
+def main():
+    a = 0
+    b = 10
+    N = 40
+    ua = -1
+    ub = 1
+    xValues = partition(a,b,N) #Her har vi en partisjon av x-intervallet
+    print (spectral_laplace(xValues, f1, ua, ub))
+
+main()
