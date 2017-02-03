@@ -39,7 +39,7 @@ def NDDLagrange(N, xValues, xn, i): #Må tas direkte
 def spectral_laplace_lhs(x):
     N = len(x)
     A = np.zeros((N,N))
-    A[0][0],A[N-1][N-1] = 1,1
+    A[0][0],A[N-1][N-1] = 1,1 #Her settes første og siste verdi i matrisen til 1
     for xn in range(1,N-1):
         for i in range(N):
             A[xn][i] = NDDLagrange(N, x, xn, i)
