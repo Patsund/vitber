@@ -42,6 +42,9 @@ def integralWithPartition(integrator,function,startValue,endValue,steps):
         integral+=integrator(function,current,current+stepLength)
         current+=stepLength
     return integral
+#main function
+def u_avg(function,startValue,endValue,steps):
+    return integralWithPartition(simpsonIntegral,function,startValue,endValue,steps)/(endValue-startValue)
 #test
 print(integralWithPartition(simpsonIntegral,foo,0,3,5))
 print(integralWithPartition(trapezoidIntegral,foo,0,3,50))
