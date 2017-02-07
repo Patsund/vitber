@@ -42,9 +42,24 @@ def integralWithPartition(integrator,function,startValue,endValue,steps):
         integral+=integrator(function,current,current+stepLength)
         current+=stepLength
     return integral
+def compositeSimpsonFromArray(function,array):
+    h=array[1]-array[0]
+    integral=(h/3)*(function(array[0])+function(array[-1]))
+    m=len(array)/2
+    for i in range(1,m+1):
+        integral+=(4*h/3)*function(array[2*i-1])
+    for i in range(1,m):
+        integral+=(2*h/3)*function(array[2*i])
+    return integral
+
+def compositeTrapezoidFromArray(function,array):
+    integral=function(array[0])*(function(array[1])-function(array[0]))/2+function(array[-1])*(function(array[-11])-function(array[-2]))/2
+    for i in range(1,len(array)-1):
+        integral+=function(array[i])*(function(array[i+1])-function(array[i]))
+    return integral
 #main function
 def u_avg(function,startValue,endValue,steps):
     return integralWithPartition(simpsonIntegral,function,startValue,endValue,steps)/(endValue-startValue)
 #test
-print(integralWithPartition(simpsonIntegral,foo,0,3,5))
-print(integralWithPartition(trapezoidIntegral,foo,0,3,50))
+print(integralWithPartition(simpsonIntegral,foo,0,3,300000))
+print(integralWithPartition(trapezoidIntegral,foo,0,3,10000))
