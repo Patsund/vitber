@@ -1,0 +1,114 @@
+import numpy as np
+import math
+PI = 3.14159265359
+
+a = 0
+b = 1
+#ua og ub settes i funksjonskall
+N = 30
+x_uniform = np.linspace(a,b,N)
+x_cheby = (b+a)/2. + (a-b)/2. * np.cos(np.arange(N)*np.pi/(N-1))
+
+def fDummyDoubleDerivated(x):
+    return (math.exp(x))*(64*PI*PI*math.cos(8*PI*x)+16*PI*math.sin(8*PI*x)-math.cos(8*PI*x))
+
+def f1(x):
+    my = 2
+    sigma = 4
+    return math.exp(-((x-my)**2)/(sigma**2))
+
+def fDummy(x):
+    return math.exp(x)*math.cos(8*math.pi*x)
+
+#Beregning av Ci:
+def iDivisor(xValues, i):
+    Ci = 1
+    for k in range(N):
+        if k != i:
+            Ci *= (xValues[i]-xValues[k])
+    return Ci
+
+#Dobbelderivasjon
+def negativeDoubleDerivator(i, x, xValues):
+    doubleDerivate = 0
+    for n in range(N): 
+        if (n != i): #Hopper over en stor iterasjonsløkke
+            for m in range(N):
+                if (m != i and m != n):
+                    product = 1
+                    for p in range(N):
+                        if (p != i and p != m and p != n):
+                            product *= (x-xValues[p])
+                    doubleDerivate += product
+    return -doubleDerivate
+
+def spectral_laplace_lhs(xValues,iDivisorArray):
+#    N = len(xValues)
+#    a,b = xValues[0],xValues[N-1]
+    A = np.zeros((N,N))
+    A[0][0],A[N-1][N-1] = 1,1 #Her settes første og siste verdi i matrisen til 1
+    print("A før fylling: \n",A)
+    for x in range(1,N-1):
+        for i in range(N):
+            A[x][i] = negativeDoubleDerivator(i, x, xValues)
+            A[x][i] /= iDivisorArray[i]
+    print("A ferdig utfylt: \n",A)
+    return A
+
+def spectral_laplace_rhs(xValues,f,ua,ub):
+#    N = len(x)
+#    a,b = x[0],x[N-1]
+    B = np.zeros(N)
+    B[0],B[N-1] = ua, ub
+    for i in range (1,N-2): #Her har jeg endret fra N-2 til N-1 onsdag 8. feb
+        B[i] = f(xValues[i])
+    print ("B-matrise: \n",B)
+    return B
+
+def Lagrange(x, xValues,i):
+    product = 1
+    for p in range(N):
+        if (p != i):
+            product *= (x-xValues[p])
+    return product
+    """ Her er koden fra NegDD:
+                    for p in range(len(xValues)):
+                        if (p != i and p != m and p != n):
+                            product *= (x-xValues[p])
+    """
+
+def spectral_laplace(xValues,fNDD,fUderivert,ua,ub):
+    iDivisorArray = np.zeros(N)
+    for i in range (N):
+        iDivisorArray[i] = iDivisor(xValues, i)
+    print("Divisor-liste: \n",iDivisorArray) #
+    A = spectral_laplace_lhs(xValues,iDivisorArray) #Lager og printer matrise A
+    B = spectral_laplace_rhs(xValues,fNDD,ua,ub) #Lager og printer matrise B
+    U = np.linalg.solve(A,B) # solve the system. Gir oss løsningen U
+    print("Linalg sin losning av U-verdier:", U) #
+    #Feilestimat:
+    print("\n--------Testing og feilestimat----------") #
+    L = np.zeros((N,N))
+    L[0][0],L[N-1][N-1] = 1,1
+    for x in range(1,N-1):
+        for i in range(N):
+            L[x][i] = Lagrange(x,xValues,i) #Feilen var: xValues[i] i stedet for x
+            L[x][i] /= iDivisorArray[i]
+    print ("L-matrise: \n",L) #
+    fValuesComputedUsingU = np.dot(L,U)
+    print("fValuesComputedUsingU: \n",fValuesComputedUsingU) #
+    fValuesCalculatedAnalytically = np.zeros(N)
+    for i in range(N):
+        fValuesCalculatedAnalytically[i] = fUderivert(xValues[i]) #Fyller inn verdier av f 
+                                                                  #(UDERIVERT!)
+    print("fValuesCalculatedAnalytically: ",fValuesCalculatedAnalytically) #
+    maxError = 0
+    for i in range(N):
+        if abs(fValuesComputedUsingU[i]-fValuesCalculatedAnalytically[i]) > maxError:
+            maxError = abs(fValuesComputedUsingU[i]-fValuesCalculatedAnalytically[i])
+    print("Max Error: ",maxError) #
+
+spectral_laplace(x_uniform,fDummyDoubleDerivated,fDummy,1,2.718281828459045)
+
+#C:\Users\Even\Documents\Pyzo\matrixAtake2.py:99: VisibleDeprecationWarning: using a non-integer #number instead of an integer will result in an error in the future
+#  fValuesCalculated[i] = foo(x[i])
